@@ -1,18 +1,31 @@
-#------------------
-# Create EC2 Server
-#------------------
-resource "aws_instance" "server" {
-   ami           = var.amiid
-   instance_type = var.type
-   key_name      = var.pemfile
-  
-   root_block_device {
-       volume_size = var.volsize
-   }
-   associate_public_ip_address = true
+# ------------------------------------------------------------------- #
+# Use this project to provision EC2 servers
+# Map variable defines the details of each server you are provisioning
+#    Name/Tag of the server = Type of the server
+# AUTHOR: ADAM M | +91-9739110917 (WhatsApp/Call)
+# ------------------------------------------------------------------- #
 
-   tags = {
-        Name = "${var.servername} - WEZVATECH"
-    }
+provider "aws" {
+  region = "ap-south-1"
+}
 
+variable "myhosts" {
+  type = map
+  default = {
+    K8sMaster = "t2.medium"
+    K8sWorker1 = "t2.micro"
+    K8sWorker2 = "t2.micro"
+  }
+}
+
+variable "mykey" { 
+  default = "mastermay"
+}
+
+module "server" {
+  for_each = var.myhosts
+  servername = each.key
+  type = each.value  
+  pemfile = var.mykey
+  source = "./modules/instances"
 }
